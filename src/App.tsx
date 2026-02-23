@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function App() {
-  // Altere a data para o dia exato que vocês começaram a namorar
   const dataInicio = new Date('2025-03-15T00:00:00'); 
-  const [tempo, setTempo] = useState(calcularTempo());
-
+  
   function calcularTempo() {
     const agora = new Date();
-    const diferenca = agora - dataInicio;
+    const diferenca = agora.getTime() - dataInicio.getTime(); 
     
     return {
       dias: Math.floor(diferenca / (1000 * 60 * 60 * 24)),
@@ -16,10 +14,13 @@ export default function App() {
     };
   }
 
+  const [tempo, setTempo] = useState(calcularTempo());
+
   useEffect(() => {
     const timer = setInterval(() => setTempo(calcularTempo()), 60000);
     return () => clearInterval(timer);
   }, []);
+
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center bg-gradient-to-b from-slate-950 via-purple-950 to-indigo-950 px-6 py-12 overflow-x-hidden">
