@@ -26,38 +26,31 @@ export default function HandController() {
     hands.setOptions({
       maxNumHands: 1,
       modelComplexity: 1,
-      minDetectionConfidence: 0.85,
-      minTrackingConfidence: 0.85,
+      minDetectionConfidence: 0.7,
+      minTrackingConfidence: 0.7,
     });
 
     hands.onResults((results) => {
       if (!results.multiHandLandmarks?.length) {
-        lastY.current = null;
         setPinching(false);
+        lastY.current = null;
         return;
       }
 
       const hand = results.multiHandLandmarks[0];
 
-      const thumb = hand[4];      // polegar ponta
-      const index = hand[8];      // indicador ponta
-      const wrist = hand[0];      // pulso
-      const middleBase = hand[9]; // base do dedo médio
+      const thumb = hand[4];   // polegar ponta
+      const index = hand[8];   // indicador ponta
 
-      // 📏 Distância da pinça
+      // 📏 Distância 3D real
       const dx = thumb.x - index.x;
       const dy = thumb.y - index.y;
-      const pinchDistance = Math.sqrt(dx * dx + dy * dy);
+      const dz = thumb.z - index.z;
 
-      // 📏 Tamanho da mão (normalização)
-      const handSize = Math.sqrt(
-        Math.pow(wrist.x - middleBase.x, 2) +
-        Math.pow(wrist.y - middleBase.y, 2)
-      );
+      const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-      const normalizedPinch = pinchDistance / handSize;
-
-      const isPinching = normalizedPinch < 0.4; // valor estável
+      // 🔥 THRESHOLD CONFIÁVEL
+      const isPinching = distance < 0.06;
 
       setPinching(isPinching);
 
@@ -71,13 +64,11 @@ export default function HandController() {
       if (lastY.current !== null) {
         const diff = currentY - lastY.current;
 
-        const deadZone = 0.015;
+        const deadZone = 0.01;
 
         if (Math.abs(diff) > deadZone) {
-          const speed = diff * 1400;
-
           window.scrollBy({
-            top: speed,
+            top: diff * 1500,
             behavior: "auto",
           });
         }
@@ -118,7 +109,7 @@ export default function HandController() {
         {active ? "Desativar Câmera" : "Ativar Câmera"}
       </button>
 
-      {/* INDICADOR VISUAL */}
+      {/* INDICADOR */}
       {active && (
         <>
           <div
